@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title >Test Beziers</title>
+		<script>
+			
+			var canvas, context, obj1, obj2, obj3, angle, tracer, slide, aa;
+			
+			function onInit() {
+				canvas = document.getElementById('elCanvas');
+   				context = canvas.getContext('2d');
+   				
+   				canvas.width = window.innerWidth;
+				canvas.height = window.innerHeight;
+				
+				tracer = document.getElementById("trace");
+				slide = document.getElementById("rot");
+				
+				obj1 = new Cilo();
+				obj1.x = 400;
+				obj1.y = 300;
+				obj2 = new Cilo();
+				obj2.x = 200;
+				
+				setInterval(animate, 33);
+			}
+			
+			function trace(val) {
+				tracer.value += val + "\n";
+			}
+			
+			function Cilo() {
+				
+				// Position
+				
+				this.x = 0;
+				this.y = 0;
+				this.z = 0;
+				
+				// Rotation
+				
+				this._rx = 0;
+				this._ry = 0;
+				this._rz = 0;
+				
+				// Scale
+				
+				this.scale = 1;
+				
+				// Parents
+				
+				this.parents = [];
+				
+				// Specifics
+				
+				this.radius = 50;
+				this.height = 60;
+				
+				// Shape
+				
+				this.original = [{x:-this.radius, y:-this.height/2, z:0},
+								{x:-this.radius, y:-this.height/2, z:-this.radius},
+								{x:0, y:-this.height/2, z:-this.radius},
+								{x:this.radius, y:-this.height/2, z:-this.radius},
+								{x:this.radius, y:-this.height/2, z:0},
+								{x:this.radius, y:-this.height/2, z:this.radius},
+								{x:0, y:-this.height/2, z:this.radius},
+								{x:-this.radius, y:-this.height/2, z:this.radius},
+								{x:-this.radius, y:this.height/2, z:0},
+								{x:-this.radius, y:this.height/2, z:-this.radius},
+								{x:0, y:this.height/2, z:-this.radius},
+								{x:this.radius, y:this.height/2, z:-this.radius},
+								{x:this.radius, y:this.height/2, z:0},
+								{x:this.radius, y:this.height/2, z:this.radius},
+								{x:0, y:this.height/2, z:this.radius},
+								{x:-this.radius, y:this.height/2, z:this.radius}];
+								
+				this.vertex = this.original.slice();
+				
+				// Render
+				
+				this.draw = function() {
+					//trace(this.vertex[0].x);
+					context.beginPath();
+					
+					context.moveTo(this.vertex[0].x, this.vertex[0].y);
+					context.lineTo(this.vertex[8].x, this.vertex[8].y);
+					
+					/*if (this.rx > 180 && this.rx < 270) {
+						context.quadraticCurveTo(this.vertex[13].x, this.vertex[13].y, this.vertex[14].x, this.vertex[14].y);
+						context.quadraticCurveTo(this.vertex[15].x, this.vertex[15].y, this.vertex[8].x, this.vertex[8].y);
+					}else if (this.rx > 270 && this.rx < 360) {
+						context.quadraticCurveTo(this.vertex[9].x, this.vertex[9].y, this.vertex[10].x, this.vertex[10].y);
+						context.quadraticCurveTo(this.vertex[11].x, this.vertex[11].y, this.vertex[12].x, this.vertex[12].y);
+					}else {*/
+						context.quadraticCurveTo(this.vertex[9].x, this.vertex[9].y, this.vertex[10].x, this.vertex[10].y);
+						context.quadraticCurveTo(this.vertex[11].x, this.vertex[11].y, this.vertex[12].x, this.vertex[12].y);
+						context.quadraticCurveTo(this.vertex[13].x, this.vertex[13].y, this.vertex[14].x, this.vertex[14].y);
+						context.quadraticCurveTo(this.vertex[15].x, this.vertex[15].y, this.vertex[8].x, this.vertex[8].y);
+					//}
+					
+					context.moveTo(this.vertex[12].x, this.vertex[12].y);
+					context.lineTo(this.vertex[4].x, this.vertex[4].y);
+					
+					/*if (this.rx > 180 && this.rx < 270) {
+						context.quadraticCurveTo(this.vertex[1].x, this.vertex[1].y, this.vertex[2].x, this.vertex[2].y);
+						context.quadraticCurveTo(this.vertex[3].x, this.vertex[3].y, this.vertex[4].x, this.vertex[4].y);
+					}else if (this.rx > 270 && this.rx < 360) {
+						context.quadraticCurveTo(this.vertex[5].x, this.vertex[5].y, this.vertex[6].x, this.vertex[6].y);
+						context.quadraticCurveTo(this.vertex[7].x, this.vertex[7].y, this.vertex[0].x, this.vertex[0].y);
+					}else {*/
+						context.quadraticCurveTo(this.vertex[5].x, this.vertex[5].y, this.vertex[6].x, this.vertex[6].y);
+						context.quadraticCurveTo(this.vertex[7].x, this.vertex[7].y, this.vertex[0].x, this.vertex[0].y);
+						context.quadraticCurveTo(this.vertex[1].x, this.vertex[1].y, this.vertex[2].x, this.vertex[2].y);
+						context.quadraticCurveTo(this.vertex[3].x, this.vertex[3].y, this.vertex[4].x, this.vertex[4].y);
+					//}
+					
+					context.lineWidth = 10;
+					context.strokeStyle = 'black';
+					context.stroke();
+				};
+				
+				this.setRotationX = function(value) {
+					if (value < 0) {
+						value = 360-value;
+					}
+			    	this._rx = value%360;
+			    	
+			    	transpose(this);
+			    };
+			    
+			    this.getRotationX = function() {
+			    	return this._rx;
+			    };
+			    
+			    this.setRotationY = function(value) {
+			    	if (value < 0) {
+						value = 360-value;
+					}
+			    	this._ry = value%360;
+			    	
+			    	transpose(this);
+			    };
+			    
+			    this.getRotationY = function() {
+			    	return this._ry;
+			    };
+			    
+			    this.setRotationZ = function(value) {
+			    	if (value < 0) {
+						value = 360-value;
+					}
+			    	this._rz = value%360;
+			    	
+			    	transpose(this);
+			    };
+			    
+			    this.getRotationZ = function() {
+			    	return this._rz;
+			    };
+				
+				this.__defineGetter__("rx", this.getRotationX);
+			    this.__defineSetter__("rx", this.setRotationX);
+			    this.__defineGetter__("ry", this.getRotationY);
+			    this.__defineSetter__("ry", this.setRotationY);
+			    this.__defineGetter__("rz", this.getRotationZ);
+			    this.__defineSetter__("rz", this.setRotationZ);
+			    
+			    // Init
+			    
+			    transpose(this);
+			}
+			
+			function largo(x1, y1, x2, y2) {
+				return Math.sqrt(Math.pow(x2-x1)*Math.pow(y2-y1));
+			}
+			
+			function radian(value) {
+				return (value*Math.PI/180);
+			}
+			
+			function transpose(obj) {
+				for (var a in obj.original) {
+					var vx = (obj.original[a].x + obj.x)*obj.scale;
+					var vy = (obj.original[a].y + obj.y)*obj.scale;
+					var vz = (obj.original[a].z + obj.z)*obj.scale;
+					var vt = {x:vx, y:vy, z:vz};
+					obj.vertex[a] = rotate(obj, vt);
+				}
+			}
+			
+			function rotate(center, vertex) {
+				var vx = vertex.x;
+				var vy = vertex.y;
+				var vz = vertex.z;
+				
+				var vxY = Math.cos(radian(center.ry))*vx + Math.sin(radian(center.ry))*vz;
+				var vyY = vy;
+				var vzY = Math.cos(radian(center.ry))*vz - Math.sin(radian(center.ry))*vx;
+				
+				var vxX = vxY;
+				var vyX = Math.cos(radian(center.rx))*vyY - Math.sin(radian(center.rx))*vzY;
+				var vzX = Math.cos(radian(center.rx))*vzY + Math.sin(radian(center.rx))*vyY;
+				
+				var vxZ = Math.cos(radian(center.rz))*vxX + Math.sin(radian(center.rz))*vyX;
+				var vyZ = Math.cos(radian(center.rz))*vyX - Math.sin(radian(center.rz))*vxX;
+				var vzZ = vzX;
+				
+				return {x:vxZ, y:vyZ, z:vzZ};
+			}
+			
+			function animate() {
+			    
+				context.fillStyle = "rgba(255,255,255,0.25)";
+				context.fillRect(0, 0, 800, 600);
+				
+				obj1.rx++;
+				obj1.ry++;
+				obj1.rz++;
+				obj1.draw();
+				
+				obj2.rx++;
+				obj2.ry++;
+				obj2.rz++;
+				obj2.draw();
+			}
+		</script>
+	</head>
+	<body onload="onInit()" >
+		<canvas id="elCanvas" width="800px" height="600px" ></canvas>
+		<textarea id="trace" ></textarea>
+		<input id="rot" type="range" name="rot" min="0" max="360">
+	</body>
+</html>

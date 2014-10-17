@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title >Test Beziers</title>
+		<script>
+			
+			var canvas, context, obj, angle, radius, tracer, slide, aa;
+			
+			function onInit() {
+				canvas = document.getElementById('elCanvas');
+   				context = canvas.getContext('2d');
+   				
+   				canvas.width = window.innerWidth;
+				canvas.height = window.innerHeight;
+				
+				tracer = document.getElementById("trace");
+				slide = document.getElementById("rot");
+				
+				aa = 0;
+				obj = new Guy(400,300,0,0,0,0,1);
+				angle = 0;
+				radius = 80;
+				
+				setInterval(animate, 33);
+			}
+			
+			function Square(xx, yy, zz, rx, ry, rz, width, height) {
+				this.x = xx;
+				this.y = yy;
+				this.z = zz;
+				this.rx = rx;
+				this.ry = ry;
+				this.rz = rz;
+				this.width = width;
+				this.height = height;
+				this.offset = 0;
+			}
+			
+			function Line(xx, yy, zz, rx, ry, rz, length) {
+				this.x = xx;
+				this.y = yy;
+				this.z = zz;
+				this.rx = rx;
+				this.ry = ry;
+				this.rz = rz;
+				this.length = length;
+				this.offset = 0;
+			}
+			
+			function Guy(xx, yy, zz, rx, ry, rz, scale) {
+				this.x = xx;
+				this.y = yy;
+				this.z = zz;
+				this.rx = rx;
+				this.ry = ry;
+				this.rz = rz;
+				this.scale = scale;
+				
+				this.head = new Square(0,-45,0,0,0,0,70,50);
+				this.head.rEye = new Square(-20,-10,0,0,0,0,2,8);
+				this.head.lEye = new Square(20,-10,0,0,0,0,2,8);
+				this.body = new Square(0,0,0,0,0,0,30,40);
+				this.body.rArm = new Line(-15,-15,0,0,0,0,25);
+				this.body.rArm.rSub = new Line(-55,0,0,0,0,0,25);
+				this.body.lArm = new Line(15,-15,0,0,0,0,25);
+				this.body.rLeg = new Line(-10,20,0,0,0,0,50);
+				this.body.lLeg = new Line(10,20,0,0,0,0,50);
+				
+				this.draw = function() {
+					context.beginPath();
+					
+					if (this.head) {
+						context.fillStyle = '#AAAAAA';
+						context.fillRect(this.x+(this.head.x-(this.head.width/2)), this.y+(this.head.y-(this.head.height/2)), this.head.width, this.head.height);
+						context.stroke();
+						
+						this.head.rEye.offset = 30;
+						this.head.rEye.x = Math.sin(radian(this.ry-this.head.rEye.offset))*35;
+						
+						var rEyeNewX = (this.x+this.head.x+this.head.rEye.x)-(this.head.lEye.width/2);
+						var rEyeNewY = (this.y+this.head.y+this.head.rEye.y)-(this.head.lEye.height/2);
+						
+						if ((this.ry-this.head.rEye.offset) > 85 && (this.ry-this.head.rEye.offset) < 260) {
+							context.fillStyle = 'black';
+							context.fillRect(rEyeNewX, rEyeNewY, this.head.rEye.width, this.head.rEye.height);
+						}
+						
+						this.head.lEye.offset = 330;
+						this.head.lEye.x = Math.sin(radian(this.ry-this.head.lEye.offset))*35;
+						
+						var lEyeNewX = (this.x+this.head.x+this.head.lEye.x)-(this.head.lEye.width/2);
+						var lEyeNewY = (this.y+this.head.y+this.head.lEye.y)-(this.head.lEye.height/2);
+						
+						if ((this.ry-this.head.lEye.offset) < -85 && (this.ry-this.head.lEye.offset) > -255) {
+							context.fillStyle = 'black';
+							context.fillRect(lEyeNewX, lEyeNewY, this.head.lEye.width, this.head.lEye.height);
+						}
+					}
+					
+					if (this.body) {
+						context.fillStyle = '#999999';
+						context.fillRect(this.x+(this.body.x-(this.body.width/2)), this.y+(this.body.y-(this.body.height/2)), this.body.width, this.body.height);
+						
+						// Right arm
+						
+						this.body.rArm.offset = 270;
+						this.body.rArm.x = Math.sin(radian(this.ry-this.body.rArm.offset))*15;
+						var rArmEnd = Math.sin(radian(this.ry-this.body.rArm.offset))*(15+this.body.rArm.length);
+						var rArmNewEnd = rArmEnd;
+						
+						if ((this.ry-this.body.rArm.offset) > -90 && (this.ry-this.body.rArm.offset) < 20) {
+							this.body.rArm.x = -15;
+						}else if ((this.ry-this.body.rArm.offset) > 15) {
+							this.body.rArm.x = 15;
+						}
+						
+						if ((this.ry-this.body.rArm.offset) > -20 && (this.ry-this.body.rArm.offset) < 20) {
+							rArmNewEnd = -15;
+						}
+						
+						var rArmNewX = (this.x+this.body.x+this.body.rArm.x);
+						var rArmNewY = (this.y+this.body.y+this.body.rArm.y);
+						rArmNewEnd = (this.x+this.body.x+rArmNewEnd);
+						context.moveTo(rArmNewX, rArmNewY);
+						context.lineTo(rArmNewEnd, rArmNewY);
+						
+						// Right subarm
+						
+						this.body.rArm.rSub.offset = 270;
+						this.body.rArm.rSub.x = Math.sin(radian(this.ry-this.body.rArm.rSub.offset))*rArmEnd;
+						var rSubEnd = Math.sin(radian(this.ry-this.body.rArm.rSub.offset))*(rArmEnd+this.body.rArm.rSub.length);
+						
+						var rSubNewX = (this.x+this.body.x+this.body.rArm.x+this.body.rArm.rSub.x);
+						var rSubNewY = (this.y+this.body.y+this.body.rArm.y+this.body.rArm.rSub.y);
+						
+						rSubEnd = (this.x+this.body.x+this.body.rArm.x+rSubEnd);
+						
+						context.moveTo(rSubNewX, rSubNewY);
+						context.lineTo(rSubEnd, rSubNewY);
+						
+						//Left arm
+						
+						this.body.lArm.offset = 90;
+						this.body.lArm.x = Math.sin(radian(this.ry-this.body.lArm.offset))*15;
+						var lArmEnd = Math.sin(radian(this.ry-this.body.lArm.offset))*(15+this.body.lArm.length);
+						
+						if ((this.ry-this.body.lArm.offset) < 90 && (this.ry-this.body.lArm.offset) > -20) {
+							this.body.lArm.x = 15;
+						}else if ((this.ry-this.body.lArm.offset) < -15) {
+							this.body.lArm.x = -15;
+						}
+						
+						if ((this.ry-this.body.lArm.offset) < 20 && (this.ry-this.body.lArm.offset) > -20) {
+							lArmEnd = 15;
+						}
+						
+						var lArmNewX = (this.x+this.body.x+this.body.lArm.x);
+						var lArmNewY = (this.y+this.body.y+this.body.lArm.y);
+						lArmEnd = (this.x+this.body.x+lArmEnd);
+						context.moveTo(lArmNewX, lArmNewY);
+						context.lineTo(lArmEnd, lArmNewY);
+						//context.stroke();
+						
+						// Right leg
+						
+						this.body.rLeg.offset = 270;
+						this.body.rLeg.x = Math.sin(radian(this.ry-this.body.rLeg.offset))*10;
+						
+						var rLegNewX = (this.x+this.body.x+this.body.rLeg.x);
+						var rLegNewY = (this.y+this.body.y+this.body.rLeg.y);
+						context.moveTo(rLegNewX, rLegNewY);
+						context.lineTo(rLegNewX, rLegNewY+this.body.rLeg.length);
+						
+						// Left Leg
+						
+						this.body.lLeg.offset = 90;
+						this.body.lLeg.x = Math.sin(radian(this.ry-this.body.lLeg.offset))*10;
+						
+						var lLegNewX = (this.x+this.body.x+this.body.lLeg.x);
+						var lLegNewY = (this.y+this.body.y+this.body.lLeg.y);
+						context.moveTo(lLegNewX, lLegNewY);
+						context.lineTo(lLegNewX, lLegNewY+this.body.lLeg.length);
+						
+					}
+					
+					context.stroke();
+				}
+			}
+			
+			function largo(x1, y1, x2, y2) {
+				return Math.sqrt(Math.pow(x2-x1)*Math.pow(y2-y1));
+			}
+			
+			function radian(value) {
+				return (value*Math.PI/180);
+			}
+			
+			function transpose(obj) {
+				for (var a in obj.original) {
+					var vx = (obj.original[a].x + obj.x)*obj.scale;
+					var vy = (obj.original[a].y + obj.y)*obj.scale;
+					var vz = (obj.original[a].z + obj.z)*obj.scale;
+					var vt = new Vertex(vx, vy, vz);
+					obj.vertex[a] = rotate(obj, vt);
+				}
+			}
+			
+			function rotate(center, vertex) {
+				var vx = vertex.x;// - center.x;
+				var vy = vertex.y;// - center.y;
+				var vz = vertex.z;// - center.z;
+				
+				var vxY = Math.cos(util.radian(center.rotationY))*vx + Math.sin(util.radian(center.rotationY))*vz;
+				var vyY = vy;
+				var vzY = Math.cos(util.radian(center.rotationY))*vz - Math.sin(util.radian(center.rotationY))*vx;
+				
+				var vxX = vxY;
+				var vyX = Math.cos(util.radian(center.rotationX))*vyY - Math.sin(util.radian(center.rotationX))*vzY;
+				var vzX = Math.cos(util.radian(center.rotationX))*vzY + Math.sin(util.radian(center.rotationX))*vyY;
+				
+				var vxZ = Math.cos(util.radian(center.rotationZ))*vxX + Math.sin(util.radian(center.rotationZ))*vyX;
+				var vyZ = Math.cos(util.radian(center.rotationZ))*vyX - Math.sin(util.radian(center.rotationZ))*vxX;
+				var vzZ = vzX;
+				
+				return new Vertex(vxZ, vyZ, vzZ);
+			}
+			
+			function animate() {
+				aa++;
+				obj.ry = aa%360;
+				context.fillStyle = 'white';
+				context.fillRect(0, 0, 800, 600);
+				//obj.draw();
+			}
+		</script>
+	</head>
+	<body onload="onInit()" >
+		<canvas id="elCanvas" width="800px" height="600px" ></canvas>
+		<textarea id="trace" ></textarea>
+		<input id="rot" type="range" name="rot" min="0" max="360">
+	</body>
+</html>
